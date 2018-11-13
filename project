@@ -1,0 +1,154 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jul 11 17:39:33 2018
+
+@author: sei
+"""
+
+import tkinter as tk
+import sqlite3
+
+class InventoryGUI():
+    
+    def __init__(self):
+        
+        # Draw the program window
+        self.window = tk.Tk()
+        self.window.title('Inventory Keeper 2000')
+        self.window.geometry('980x800')
+
+
+        # Make frames for the different functions
+        self.greet_frame = tk.Frame(self.window)
+        self.empty = tk.Frame(self.window, height=75)
+        self.lookup_frame = tk.Frame(self.window)
+        self.empty1 = tk.Frame(self.window, height=75)
+        self.add_frame = tk.Frame(self.window)
+        self.empty2 = tk.Frame(self.window, height=75)
+        self.change_frame = tk.Frame(self.window)
+        self.empty3 = tk.Frame(self.window, height=75)
+        self.del_frame = tk.Frame(self.window)
+    
+        # Label used for greeting header of the program
+        self.greet_label = tk.Label(self.greet_frame, text='Welcome to Inventory Keeper 2000', font=('ariel',18), bd=20, bg="blue violet", relief="raised")
+    
+        # Labels and entry widgets for the Look Up section
+        self.lookup_label = tk.Label(self.lookup_frame, text='Item Code  ', font=('georgia',14))
+        self.lookup_label.grid(column=0, row=0)
+        self.lookup_entry = tk.Entry(self.lookup_frame, bd=6, relief='sunken', font=('georgia',14))
+        self.lookup_entry.grid(column=1, row=0)
+        self.lookup_button = tk.Button(self.lookup_frame, text='Lookup', font=('georgia',18), relief="groove", cursor="pirate", bg="pale violet red",command=self.lookup)
+        self.lookup_button.grid(column=2, row=0)
+    
+        # Labels and entry widgets for the Add (new entry) section
+        self.add_code_label = tk.Label(self.add_frame, text='Item Code  ', font=('georgia',14))
+        self.add_code_label.grid(column=0, row=0)
+        self.add_code_entry = tk.Entry(self.add_frame, bd=6, relief='sunken', font=('georgia',14))
+        self.add_code_entry.grid(column=1, row=0)
+        self.add_name_label = tk.Label(self.add_frame, text='Item Name  ', font=('georgia',14))
+        self.add_name_label.grid(column=0, row=1)
+        self.add_name_entry = tk.Entry(self.add_frame, bd=6, relief='sunken', font=('georgia',14))
+        self.add_name_entry.grid(column=1, row=1)
+        self.add_qty_label = tk.Label(self.add_frame, text='Item Quantity  ', font=('georgia',14))
+        self.add_qty_label.grid(column=0, row=2)
+        self.add_qty_entry = tk.Entry(self.add_frame, bd=6, relief='sunken', font=('georgia',14))
+        self.add_qty_entry.grid(column=1, row=2)
+        self.add_button = tk.Button(self.add_frame, text='Add New Item', font=('georgia',18), bg="magenta3", relief="groove", cursor="target", command=self.add_item)
+        self.add_button.grid(column=5, row=1)
+    
+        # Labels and entry widgets for the "Change Entry Info" section
+        self.change_code_label = tk.Label(self.change_frame, text='Item Code  ', font=('georgia',14))
+        self.change_code_label.grid(column=0, row=0)
+        self.change_code_entry = tk.Entry(self.change_frame, bd=6, relief='sunken', font=('georgia',14))
+        self.change_code_entry.grid(column=1, row=0)
+        self.change_qty_label = tk.Label(self.change_frame, text='New Quantity  ', font=('georgia',14))
+        self.change_qty_label.grid(column=0, row=1)
+        self.change_qty_entry = tk.Entry(self.change_frame, bd=6, relief='sunken', font=('georgia',14))
+        self.change_qty_entry.grid(column=1, row=1)
+        self.change_button = tk.Button(self.change_frame, text='Change Quantity', font=('georgia',18), relief="groove", cursor="target", bg="pink3", command=self.change)
+        self.change_button.grid(column=2, row=1)
+    
+        # Labels and entry widgets for the "Delete Item" section
+        self.del_label = tk.Label(self.del_frame, text='Item Code  ', font=('georgia',14))
+        self.del_label.grid(column=0, row=0)
+        self.del_entry = tk.Entry(self.del_frame, bd=6, relief='sunken', font=('georgia',14))
+        self.del_entry.grid(column=1, row=0)
+        self.del_button = tk.Button(self.del_frame, text='Delete Item', font=('georgia',18), relief="groove", cursor="target", bg="violet red", command=self.delete)
+        self.del_button.grid(column=2, row=0)
+    
+        # Packed greeting header
+        self.greet_label.pack(side='left')
+    
+        # Packed frames
+        self.greet_frame.pack()
+        self.empty.pack()
+        self.lookup_frame.pack()
+        self.empty1.pack()
+        self.add_frame.pack()
+        self.empty2.pack()
+        self.change_frame.pack()
+        self.empty3.pack()
+        self.del_frame.pack()
+
+
+        self.window.mainloop()
+        
+    # Function to connect and/or create the db file and table
+    def connect(self):
+        connect = sqlite3.connect("inv.db")
+        cursor = connect.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS inv_items(itemCode INTEGER NOT NULL, name TEXT NOT NULL, qty INTEGER NOT NULL)")
+        connect.commit()
+        connect.close()
+        
+    # Function to add a new item row to the table
+    def add_item(self):
+        connect = sqlite3.connect("inv.db")
+        cursor = connect.cursor()
+        i = self.add_code_entry.get()
+        n = self.add_name_entry.get()
+        q = self.add_qty_entry.get()
+        cursor.execute("INSERT INTO inv_items (itemCode, name, qty) VALUES (?,?,?)", (i, n, q))
+        connect.commit()
+        connect.close()
+        
+    # Function to look up the information on an item/row via the itemCode    
+    def lookup(self, itemCode=""):
+        connect = sqlite3.connect("inv.db")
+        cursor = connect.cursor()
+        bob = self.lookup_entry.get()
+        cursor.execute("SELECT * FROM inv_items WHERE itemCode=?", (bob,))
+        print(cursor.fetchall())
+        connect.close()
+        
+    # Function to look up an item/row and change the quantity via itemCode
+    def change(self):
+        connect = sqlite3.connect("inv.db")
+        cursor = connect.cursor()
+        c = self.change_code_entry.get()
+        qt = self.change_qty_entry.get()
+        cursor.execute("UPDATE inv_items SET qty = ? WHERE itemCode=?", (qt,c))
+        connect.commit()
+        connect.close()
+    
+    # Function to look up an item/row and delete the entire row via itemCode
+    def delete(self, itemCode=""):
+        connect = sqlite3.connect("inv.db")
+        cursor = connect.cursor()
+        x = self.del_entry.get()
+        cursor.execute("DELETE FROM inv_items WHERE itemCode=?", (x,))
+        connect.commit()
+        connect.close()
+        
+        
+def main():
+    
+    # Create the db and table with empty values on start of program
+    inventory = InventoryGUI()
+    inventory.connect()
+    
+    
+
+    
+
+main()
